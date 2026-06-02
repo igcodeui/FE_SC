@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FE Portal - State Lookup Tool</title>
+    <style>
+        /* Base Layout styling matching the FE Portal dashboard */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #141b26; /* Dark navy portal background */
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        /* Top Header Navigation Strip */
+        .header-bar {
+            width: 100%;
+            max-width: 1000px;
+            background-color: #1a2332;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #233044;
+        }
+        .portal-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .portal-badge {
+            background-color: #ffa000; /* Gold accent badge */
+            color: #141b26;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 900;
+        }
+
+        /* Main Workspace split: Content Left, Assistance panel Right */
+        .main-workspace {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* Left Column: Search functionality */
+        .left-panel {
+            flex: 1.3;
+            background-color: #1a2332;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #233044;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .section-tag {
+            color: #ffa000; /* Gold label styling */
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        p.instruction {
+            color: #a0aec0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Input and Forms designed to look integrated into dialers */
+        .input-group {
+            margin: 25px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            background-color: #111722;
+            border: 1px solid #2d3d56;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #ffffff;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #ffa000;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #2b6cb0; /* Professional agent action button blue */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #3182ce;
+        }
+
+        /* Status Dynamic boxes styled after script blocks */
+        .result-box {
+            margin-top: 25px;
+            padding: 18px;
+            border-radius: 6px;
+            display: none;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+        .green-state {
+            background-color: rgba(48, 180, 107, 0.12);
+            color: #48bb78;
+            border-left: 4px solid #48bb78;
+        }
+        .regular-state {
+            background-color: rgba(226, 116, 35, 0.12);
+            color: #ed8936;
+            border-left: 4px solid #ed8936;
+        }
+        .error-state {
+            background-color: rgba(229, 62, 62, 0.12);
+            color: #f56565;
+            border-left: 4px solid #f56565;
+        }
+
+        /* Right Column: Reference Panel for Agent guidance */
+        .right-panel {
+            flex: 0.8;
+            background-color: #1a2332;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #233044;
+            max-height: 480px;
+            overflow-y: auto;
+        }
+        .panel-header {
+            font-size: 13px;
+            font-weight: bold;
+            color: #e2e8f0;
+            border-bottom: 1px solid #2d3d56;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .state-chip {
+            background-color: #111722;
+            border: 1px solid #233044;
+            padding: 8px;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #48bb78;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-bar">
+    <div class="portal-title">
+        <span class="portal-badge">FE PORTAL</span> State Checker
+    </div>
+</div>
+
+<div class="main-workspace">
+    <div class="left-panel">
+        <span class="section-tag">Target Lead Verification</span>
+        <p class="instruction">Input the prospect's 10-digit number from your dialer to automatically identify target compliance zones and verification channels.</p>
+        
+        <div class="input-group">
+            <input type="text" id="phoneNumber" placeholder="Enter Phone Number (e.g. 5125550143)" maxlength="14">
+        </div>
+        <button onclick="lookupNumber()">Verify Compliance State</button>
+
+        <div id="result" class="result-box"></div>
+    </div>
+
+    <div class="right-panel">
+        <div class="panel-header">🟢 APPROVED GREEN STATES REFERENCE</div>
+        <div class="state-grid">
+            <div class="state-chip">AL</div>
+            <div class="state-chip">AZ</div>
+            <div class="state-chip">CA</div>
+            <div class="state-chip">CO</div>
+            <div class="state-chip">IL</div>
+            <div class="state-chip">IN</div>
+            <div class="state-chip">KS</div>
+            <div class="state-chip">KY</div>
+            <div class="state-chip">MI</div>
+            <div class="state-chip">MO</div>
+            <div class="state-chip">OH</div>
+            <div class="state-chip">PA</div>
+            <div class="state-chip">SC</div>
+            <div class="state-chip">TN</div>
+            <div class="state-chip">TX</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// A comprehensive mapping of major US Area Codes to their respective State Abbreviation
+const areaCodeToState = {
+    "205": "AL", "251": "AL", "256": "AL", "334": "AL", "938": "AL",
+    "480": "AZ", "520": "AZ", "602": "AZ", "623": "AZ", "928": "AZ",
+    "209": "CA", "213": "CA", "310": "CA", "323": "CA", "408": "CA", "415": "CA", "424": "CA", "442": "CA", "510": "CA", "530": "CA", "559": "CA", "562": "CA", "619": "CA", "626": "CA", "650": "CA", "657": "CA", "661": "CA", "669": "CA", "707": "CA", "714": "CA", "747": "CA", "760": "CA", "805": "CA", "818": "CA", "831": "CA", "858": "CA", "909": "CA", "916": "CA", "925": "CA", "949": "CA", "951": "CA",
+    "303": "CO", "719": "CO", "720": "CO", "970": "CO",
+    "217": "IL", "309": "IL", "312": "IL", "447": "IL", "618": "IL", "630": "IL", "708": "IL", "731": "IL", "773": "IL", "815": "IL", "847": "IL", "872": "IL",
+    "219": "IN", "260": "IN", "317": "IN", "463": "IN", "574": "IN", "765": "IN", "812": "IN", "930": "IN",
+    "316": "KS", "620": "KS", "785": "KS", "913": "KS",
+    "270": "KY", "364": "KY", "502": "KY", "606": "KY", "859": "KY",
+    "231": "MI", "248": "MI", "269": "MI", "313": "MI", "517": "MI", "586": "MI", "616": "MI", "734": "MI", "810": "MI", "906": "MI", "947": "MI", "989": "MI",
+    "314": "MO", "417": "MO", "573": "MO", "636": "MO", "660": "MO", "816": "MO",
+    "216": "OH", "234": "OH", "330": "OH", "419": "OH", "440": "OH", "513": "OH", "614": "OH", "740": "OH", "937": "OH",
+    "215": "PA", "267": "PA", "412": "PA", "484": "PA", "570": "PA", "610": "PA", "717": "PA", "724": "PA", "814": "PA",
+    "803": "SC", "843": "SC", "864": "SC",
+    "423": "TN", "615": "TN", "731": "TN", "865": "TN", "901": "TN", "931": "TN",
+    "210": "TX", "214": "TX", "254": "TX", "281": "TX", "325": "TX", "361": "TX", "409": "TX", "432": "TX", "469": "TX", "512": "TX", "682": "TX", "713": "TX", "806": "TX", "817": "TX", "830": "TX", "832": "TX", "903": "TX", "915": "TX", "936": "TX", "940": "TX", "956": "TX", "972": "TX",
+    
+    // NY & FL included as sample non-green structures
+    "212": "NY", "718": "NY", "917": "NY", "305": "FL", "407": "FL", "813": "FL"
+};
+
+const greenStates = new Set(["AL", "AZ", "CA", "CO", "IL", "IN", "KS", "KY", "MI", "MO", "OH", "PA", "SC", "TN", "TX"]);
+
+function lookupNumber() {
+    const input = document.getElementById("phoneNumber").value;
+    const resultDiv = document.getElementById("result");
+    
+    const cleaned = input.replace(/\D/g, '');
+    
+    let areaCode = "";
+    if (cleaned.length === 10) {
+        areaCode = cleaned.substring(0, 3);
+    } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
+        areaCode = cleaned.substring(1, 4);
+    } else {
+        resultDiv.style.display = "block";
+        resultDiv.className = "result-box error-state";
+        resultDiv.innerHTML = "⚠️ Alert: Please supply a standard 10-digit campaign phone number.";
+        return;
+    }
+    
+    const state = areaCodeToState[areaCode];
+    
+    if (!state) {
+        resultDiv.style.display = "block";
+        resultDiv.className = "result-box error-state";
+        resultDiv.innerHTML = `⚠️ Area code (${areaCode}) not found in database. Check format.`;
+        return;
+    }
+    
+    resultDiv.style.display = "block";
+    if (greenStates.has(state)) {
+        resultDiv.className = "result-box green-state";
+        resultDiv.innerHTML = `Verified State: ${state} <br> 🟢 Lead Status: APPROVED GREEN STATE`;
+    } else {
+        resultDiv.className = "result-box regular-state";
+        resultDiv.innerHTML = `Verified State: ${state} <br> 🟠 Lead Status: NOT A GREEN STATE`;
+    }
+}
+</script>
+
+</body>
+</html>
